@@ -1,83 +1,87 @@
-+++
-title = "Dọn dẹp tài nguyên  "
-date = 2021
-weight = 6
-chapter = false
-pre = "<b>6. </b>"
-+++
+---
+title : "Dọn dẹp tài nguyên"
+date :  "`r Sys.Date()`" 
+weight : 6 
+chapter : false
+pre : " <b> 6. </b> "
+---
+Mục tiêu:
+Xóa toàn bộ tài nguyên đã tạo để tránh phát sinh chi phí không cần thiết và chuẩn bị môi trường sạch cho các lần triển khai hoặc lab tiếp theo.
 
-Chúng ta sẽ tiến hành các bước sau để xóa các tài nguyên chúng ta đã tạo trong bài thực hành này.
+**Bước 1: Xóa Endpoint Interface ở VPC Consumer**
++ Vào VPC → Endpoints trong region us-west-2 (Consumer).
 
-#### Xóa EC2 instance
++ Chọn Endpoint tương ứng với PrivateLink đã tạo (dựa vào Service Name).
 
-1. Truy cập [giao diện quản trị dịch vụ EC2](https://console.aws.amazon.com/ec2/v2/home)
-  + Click **Instances**.
-  + Click chọn cả 2 instance **Public Linux Instance** và **Private Windows Instance**. 
-  + Click **Instance state**.
-  + Click **Terminate instance**, sau đó click **Terminate** để xác nhận.
++ Click Actions → Delete Endpoint để xóa Endpoint Interface.
 
-2. Truy cập [giao diện quản trị dịch vụ IAM](https://console.aws.amazon.com/iamv2/home#/home)
-  + Click **Roles**.
-  + Tại ô tìm kiếm , điền **SSM**.
-  + Click chọn **SSM-Role**.
-  + Click **Delete**, sau đó điền tên role **SSM-Role** và click **Delete** để xóa role.
-  
-![Clean](/images/6.clean/001-clean.png)
+**Bước 2: Xóa Security Group của Endpoint (Consumer)**
++ Vào EC2 → Security Groups trong region us-west-2.
 
-3. Click **Users**.
-  + Click chọn user **Portfwd**.
-  + Click **Delete**, sau đó điền tên user **Portfwd** và click **Delete** để xóa user.
++ Tìm và chọn SG-Endpoint (hoặc SG liên quan đến Endpoint).
 
-#### Xóa S3 bucket
++ Xóa Security Group này (Delete).
 
-1. Truy cập [giao diện quản trị dịch vụ System Manager - Session Manager](https://console.aws.amazon.com/systems-manager/session-manager).
-  + Click tab **Preferences**.
-  + Click **Edit**.
-  + Kéo chuột xuống dưới.
-  + Tại mục **S3 logging**.
-  + Bỏ chọn **Enable** để tắt tính năng logging.
-  + Kéo chuột xuống dưới.
-  + Click **Save**.
+**Bước 3: Xóa EC2 Consumer (nếu có)**
++ Vào EC2 → Instances region us-west-2.
 
-2. Truy cập [giao diện quản trị dịch vụ S3](https://s3.console.aws.amazon.com/s3/home)
-  + Click chọn S3 bucket chúng ta đã tạo cho bài thực hành. ( Ví dụ : lab-fcj-bucket-0001 )
-  + Click **Empty**.
-  + Điền **permanently delete**, sau đó click **Empty** để tiến hành xóa object trong bucket.
-  + Click **Exit**.
++ Tắt và terminate các instance EC2 đã tạo trong VPC Consumer, ví dụ instance dùng để test kết nối.
 
-3. Sau khi xóa hết object trong bucket, click **Delete**
+**Bước 4: Xóa Subnet và VPC Consumer**
++ Vào VPC → Subnets trong region us-west-2.
 
-![Clean](/images/6.clean/002-clean.png)
++ Chọn các subnet thuộc VPC-Consumer (Consumer-Subnet-1, Consumer-Subnet-2).
 
-4. Điền tên S3 bucket, sau đó click **Delete bucket** để tiến hành xóa S3 bucket.
++ Xóa từng subnet.
 
-![Clean](/images/6.clean/003-clean.png)
++ Quay lại VPC → Your VPCs, chọn VPC-Consumer và xóa VPC.
 
-#### Xóa các VPC Endpoint
+**Bước 5: Từ region Provider (us-east-1), xóa Endpoint Service và NLB**
++ Vào VPC → Endpoint Services region us-east-1.
 
-1. Truy cập vào [giao diện quản trị dịch vụ VPC](https://console.aws.amazon.com/vpc/home)
-  + Click **Endpoints**.
-  + Chọn 4 endpoints chúng ta đã tạo cho bài thực hành bao gồm **SSM**, **SSMMESSAGES**, **EC2MESSAGES**, **S3GW**.
-  + Click **Actions**.
-  + Click **Delete VPC endpoints**.
++ Chọn Service-Provider Endpoint Service đã tạo.
 
-![Clean](/images/6.clean/004-clean.png)
++ Xóa Endpoint Service (Delete).
 
-2. Tại ô confirm , điền **delete**.
-  + Click **Delete** để tiến hành xóa các endpoints.
++ Vào EC2 → Load Balancers region us-east-1.
 
-3. Click biểu tượng refresh, kiểm tra tất cả các endpoints đã bị xóa trước khi làm bước tiếp theo.
++ Chọn NLB-Provider (Network Load Balancer).
 
-![Clean](/images/6.clean/005-clean.png)
++ Xóa Load Balancer (Delete). 
 
-#### Xóa VPC
+**Bước 6: Xóa Target Group Backend**
++ Vào EC2 → Target Groups region us-east-1.
 
-1. Truy cập vào [giao diện quản trị dịch vụ VPC](https://console.aws.amazon.com/vpc/home)
-  + Click **Your VPCs**.
-  + Click chọn **Lab VPC**.
-  + Click **Actions**.
-  + Click **Delete VPC**.
++ Chọn Target Group tgbackend.
 
-2. Tại ô confirm, điền **delete** để xác nhận, click **Delete** để thực hiện xóa **Lab VPC** và các tài nguyên liên quan.
++ Xóa Target Group.
 
-![Clean](/images/6.clean/006-clean.png)
+**Bước 7: Xóa EC2 Backend (Provider)**
++ Vào EC2 → Instances region us-east-1.
+
++ Tắt và terminate instance Backend-EC2.
+
+**Bước 8: Xóa Security Groups của Provider**
++ Vào EC2 → Security Groups region us-east-1.
+
++ Xóa các Security Group: SG-Backend, SG-NLB.
+
+**Bước 9: Xóa Subnets và VPC Provider**
++ Vào VPC → Subnets region us-east-1.
+
++ Xóa các subnet thuộc VPC-Provider (Provider-Subnet-1, Provider-Subnet-2).
+
++ Vào VPC → Your VPCs region us-east-1.
+
++ Xóa VPC-Provider.
+
+**Bước 10: Xóa Private Hosted Zone**
++ Vào Route 53 → Hosted zones (region mặc định).
+
++ Tìm và xóa Private Hosted Zone tên service.provider.local nếu đã tạo cho phần DNS resolution.
+{{%notice note%}}
+Lưu ý:
+Hãy xóa các tài nguyên theo thứ tự từ nhỏ đến lớn (instance trước, rồi security groups, subnets, rồi VPC) để tránh lỗi phụ thuộc.
+Kiểm tra lại các tài nguyên còn tồn đọng bằng cách vào từng dịch vụ AWS Console.
+Đảm bảo không còn tài nguyên phát sinh chi phí sau khi xóa.
+{{%/notice%}}

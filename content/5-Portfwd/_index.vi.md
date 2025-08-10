@@ -1,93 +1,60 @@
 ---
-title : "Port Forwarding"
+title : "Quy trình vận hành"
 date :  "`r Sys.Date()`" 
 weight : 5 
 chapter : false
 pre : " <b> 5. </b> "
 ---
 
-{{% notice info %}}
-**Port Forwarding** là mốt cách thức hữu ích để chuyển hướng lưu lượng mạng từ 1 địa chỉ IP - Port này sang 1 địa chỉ IP - Port khác. Với **Port Forwarding** chúng ta có thể truy cập một EC2 instance nằm trong private subnet từ máy trạm của chúng ta.
+{{% notice note %}}
+Mục tiêu: Quản lý, giám sát và mở rộng PrivateLink một cách dễ dàng, đảm bảo dịch vụ hoạt động ổn định và bảo mật, phù hợp với người vận hành đơn lẻ.
 {{% /notice %}}
 
-Chúng ta sẽ cấu hình **Port Forwarding** cho kết nối RDP giữa máy của mình với **Private Windows Instance** nằm trong private subnet mà chúng ta đã tạo cho bài thực hành này.
+**1. Ghi chép và lưu trữ cấu hình quan trọng**
++ Ghi lại thông tin VPC ID, CIDR, Subnet ID, Security Group ID, Endpoint ID, Service Name.
 
-![port-fwd](/images/arc-04.png) 
++ Lưu ở nơi dễ tìm (Google Docs, Notepad, hoặc file trên máy tính).
 
++ Ghi rõ ngày giờ thay đổi cấu hình để theo dõi.
 
+**2. Kiểm tra định kỳ (ví dụ 1 tuần/lần)**
++ Kiểm tra DNS resolution bằng lệnh nslookup hoặc dig từ EC2 hoặc máy tính cá nhân.
 
-#### Tạo IAM User có quyền kết nối SSM
++ Xem nhanh trạng thái Endpoint trong AWS Console: có “Available” không, có lỗi gì không.
 
-1. Truy cập vào [giao diện quản trị dịch vụ IAM](https://console.aws.amazon.com/iamv2/home)
-  + Click **Users** , sau đó click **Add users**.
++ Kiểm tra logs VPC Flow Logs (nếu bật) hoặc CloudWatch xem có truy cập lạ không.
 
-![FWD](/images/5.fwd/001-fwd.png)
++ Ghi chú lại nếu phát hiện bất thường.
 
-2. Tại trang **Add user**.
-  + Tại mục **User name**, điền **Portfwd**.
-  + Click chọn **Access key - Programmatic access**.
-  + Click **Next: Permissions**.
-  
-![FWD](/images/5.fwd/002-fwd.png)
+**3. Khi cần mở rộng hoặc thay đổi**
++ Nếu dịch vụ bị tải cao, thêm subnet mới vào Endpoint và NLB qua Console.
 
-3. Click **Attach existing policies directly**.
-  + Tại ô tìm kiếm , điền **ssm**.
-  + Click chọn **AmazonSSMFullAccess**.
-  + Click **Next: Tags**, click **Next: Reviews**.
-  + Click **Create user**.
++ Nếu muốn mở rộng ra vùng (region) mới, tạo thêm Endpoint ở vùng đó.
 
-4. Lưu lại thông tin **Access key ID** và **Secret access key** để thực hiện cấu hình AWS CLI.
++ Luôn ghi lại thay đổi và kiểm tra lại kết nối sau khi thêm subnet hoặc region mới.
 
-#### Cài đặt và cấu hình AWS CLI và Session Manager Plugin 
-  
-Để thực hiện phần thực hành này, đảm bảo máy trạm của bạn đã cài [AWS CLI]() và [Session Manager Plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+**4. Xử lý sự cố cơ bản**
++ DNS không hoạt động → kiểm tra lại Private DNS setting, Security Group.
 
-Bạn có thể tham khảo thêm bài thực hành về cài đặt và cấu hình AWS CLI [tại đây](https://000011.awsstudygroup.com/).
++ Kết nối timeout → kiểm tra trạng thái Endpoint, NLB, Security Group, Route Table.
 
-{{%notice tip%}}
-Với Windows thì khi giải nén thư mục cài đặt **Session Manager Plugin** bạn hãy chạy file **install.bat** với quyền Administrator để thực hiện cài đặt.
-{{%/notice%}}
++ Ghi lại lỗi và cách khắc phục để lần sau nhanh xử lý.
 
-#### Thực hiện Portforwarding 
+**5. Bảo mật đơn giản**
++ Không chia sẻ quyền truy cập AWS cho người khác nếu không cần thiết.
 
-1. Chạy command dưới đây trong **Command Prompt** trên máy của bạn để cấu hình **Port Forwarding**.
++ Đảm bảo Security Group chỉ mở các port cần thiết.
 
-```
-  aws ssm start-session --target (your ID windows instance) --document-name AWS-StartPortForwardingSession --parameters portNumber="3389",localPortNumber="9999" --region (your region) 
-```
-{{%notice tip%}}
++ Bật CloudTrail để theo dõi ai thay đổi cấu hình (nếu có).
 
-Thông tin **Instance ID** của **Windows Private Instance** có thể tìm được khi bạn xem chi tiết máy chủ EC2 Windows Private Instance.
+**6. Sao lưu đơn giản**
++ Lưu lại file cấu hình hoặc snapshot cấu hình trên AWS (VD: Export CloudFormation nếu có).
 
-{{%/notice%}}
++ Nếu cần, viết nhanh lại các bước tạo Endpoint, NLB để có thể làm lại nhanh.
 
-  + Câu lệnh ví dụ
+**7. Tự học và nâng cao**
++ Tham khảo tài liệu AWS khi có tính năng mới.
 
-```
-C:\Windows\system32>aws ssm start-session --target i-06343d7377486760c --document-name AWS-StartPortForwardingSession --parameters portNumber="3389",localPortNumber="9999" --region ap-southeast-1
-```
++ Tự động hóa bằng script hoặc CloudFormation khi bạn có thời gian để giảm thao tác thủ công.
 
-{{%notice warning%}}
-
-Nếu câu lệnh của bạn báo lỗi như dưới đây : \
-SessionManagerPlugin is not found. Please refer to SessionManager Documentation here: http://docs.aws.amazon.com/console/systems-manager/session-manager-plugin-not-found\
-Chứng tỏ bạn chưa cài Session Manager Plugin thành công. Bạn có thể cần khởi chạy lại **Command Prompt** sau khi cài **Session Manager Plugin**.
-
-{{%/notice%}}
-
-2. Kết nối tới **Private Windows Instance** bạn đã tạo bằng công cụ **Remote Desktop** trên máy trạm của bạn.
-  + Tại mục Computer: điền **localhost:9999**.
-
-
-![FWD](/images/5.fwd/003-fwd.png)
-
-
-3. Quay trở lại giao diện quản trị của dịch vụ System Manager - Session Manager.
-  + Click tab **Session history**.
-  + Chúng ta sẽ thấy các session logs với tên Document là **AWS-StartPortForwardingSession**.
-
-
-![FWD](/images/5.fwd/004-fwd.png)
-
-
-Chúc mừng bạn đã hoàn tất bài thực hành hướng dẫn cách sử dụng Session Manager để kết nối cũng như lưu trữ các session logs trong S3 bucket. Hãy nhớ thực hiện bước dọn dẹp tài nguyên để tránh sinh chi phí ngoài ý muốn nhé.
+ Hãy nhớ thực hiện bước dọn dẹp tài nguyên để tránh sinh chi phí ngoài ý muốn nhé.

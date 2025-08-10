@@ -1,66 +1,80 @@
 ---
-title : "Tạo Public Linux EC2"
+title : "Tạo EC2 Backend"
 date :  "`r Sys.Date()`" 
 weight : 5
 chapter : false
-pre : " <b> 2.1.5 </b> "
+pre : " <b> 2.1.4 </b> "
 ---
 
 1. Truy cập [giao diện quản trị dịch vụ EC2](https://console.aws.amazon.com/ec2/v2/home)
   + Click **Instances**.
   + Click **Launch instances**.
   
-![EC2](/images/2.prerequisite/027-createec2.png)
+![EC2](/images/2.prerequisite/8-ec2-1.png)
 
 2. Tại trang **Step 1: Choose an Amazon Machine Image (AMI)**.
-  + Click **Select** để lựa chọn AMI **Amazon Linux 2 AMI**.
+  + Click **Select** để lựa chọn AMI **Amazon Linux 2023 AMI**.
   
-![EC2](/images/2.prerequisite/028-createec2.png)
-
-3. Tại trang **Step 2: Choose an Instance Type**.
+   Tại trang **Step 2: Choose an Instance Type**.
  + Click chọn Instance type **t2.micro**.
- + Click **Next: Configure Instance Details**.
  
-![EC2](/images/2.prerequisite/029-createec2.png)
+![EC2](/images/2.prerequisite/9-ec2-2.png)
 
-4. Tại trang **Step 3: Configure Instance Details**
-  + Tại mục **Network** chọn **Lab VPC**.
-  + Tại mục **Subnet** chọn **Lab Public Subnet**.
-  + Tại mục **Auto-assign Public IP** chọn **Use subnet setting (Enable)**
-  + Click **Next: Add Storage**.
+3. Tại mục **Key pair (login)**
+  + Chọn **Create new key pair**
+  + Tại mục **Key pair name** nhập **Backend-EC2Key**.
+  + Tại mục **Key pair type** chọn **RSA**
+  + Tại mục **Private key file format** Chọn **.pem**
+  + Click **Create key pair**.
 
-![EC2](/images/2.prerequisite/030-createec2.png)
+![EC2](/images/2.prerequisite/10-keypema1.png)
 
-5. Click **Next: Add Tags** để chuyển sang bước kế tiếp.
-  + Click **Next: Configure Security Group** để chuyển sang bước kế tiếp.
+4. Tại mục **Network settings** 
+  + Click **Edit** 
+  + Tại mục **VPC - required** Chọn **VCP-Provider**
+  + Tiếp tục **Subnet** Chọn **Provider-Subnet-1**
+  + Phần **Firewall(security groups)** Chọn **Select existing security group**
+  + **Common security groups** Chọn **SG-Backend**.
+  + Sau khi tạo xong, SSH vào EC2 và cài web server
+
+![EC2](/images/2.prerequisite/11-ec2-3.png)
+
+5. Trước khi SSH cần làm 1 số thứ sau đây.
++ Gắn Internet Gateway (IGW) cho VPC
+Vào VPC → Internet Gateways.
++ Create internet gateway → đặt tên (ví dụ: Provider-IGW).
+
+Attach IGW đó vào VPC Provider-VPC.
+
++ Tạo/Chỉnh Route Table cho Subnet 
++ Vào VPC → Route Tables.
++ Chọn route table đang gắn với Provider-Subnet-1 hoặc tạo mới.
++ Edit routes:  Add route:
+ + Destination: 0.0.0.0/0
+ + Target: Internet Gateway (Provider-IGW)
++ **Save changes.**
+Associate subnet: Gắn Provider-Subnet-1 vào route table này.
+
+Cấp Public IPv4 cho EC2
++ Vào EC2 → Instances → Chọn EC2.
++ Actions → Networking → Manage IP Addresses.
++ Assign new Elastic IP hoặc bật Auto-assign public IPv4.
++ **Save.**
+6. Tiếp tục mở **Gitbash** hoặc **Nhấn Windows + S → gõ PowerShell → Enter.** 
+Ở đây mình dùng trên Git Bash nhé
+  + Vào phần **Details** Copy **Public IPv4 address**
+  + Tiếp tục vào Git Bash gõ lệnh **ssh -i ssh -i your-key.pem ec2-user@"Your Public IPv4 address"** 
+  + Ví dụ đây là đường dẫn đúng **ssh -i "/d/AWS/Backend-EC2Key.pem" ec2-user@13.212.27.188**
+  + Nhập **Yes**
+  + Đây là giao diện bạn đã SSH thành công 
+
+![EC2](/images/2.prerequisite/12-gitbash.png)
+
+7. Sau đó cài đặt và khởi chạy web server Nginx trên EC2, đồng thời tạo trang HTML kiểm tra truy cập.
++ Nhập sudo yum install -y nginx
++ **sudo systemctl enable nginx**
++ **sudo systemctl start nginx**
++ **echo "Hello from Provider" | sudo tee /usr/share/nginx/html/index.html**
 
 
-6. Tại trang **Step 6: Configure Security Group**.
-  + Chọn **Select an existing security group**.
-  + Chọn security group **SG Public Linux Instance**.
-  + Click **Review and Launch**.
-
-![EC2](/images/2.prerequisite/031-createec2.png)
-
-7. Hộp thoại cảnh báo hiện lên vì chúng ta không cấu hình tường lửa cho phép kết nối vào port 22, Click **Continue** để tiếp tục.
-
-8. Tại trang **Step 7: Review Instance Launch**.
-  + Click **Launch**.
-
-9. Tại hộp thoại **Select an existing key pair or create a new key pair**.
-  + Click chọn **Create a new key pair**.
-  + Tại mục **Key pair name** điền **LabKeypair**.
-  + Click **Download Key Pair** và lưu xuống máy tính của bạn.
-  + Click **Launch Instances** để tạo máy chủ EC2.
-
-![EC2](/images/2.prerequisite/032-createec2.png)
-
-10. Click **View Instances** để quay lại danh mục EC2 instances.
-
-11. Click vào biểu tượng edit dưới cột **Name**.
-  + Tại hộp thoại **Edit Name** điền **Public Linux Instance**.
-  + Click **Save**.
-
-![EC2](/images/2.prerequisite/033-createec2.png)
-
-Tiếp theo chúng ta sẽ thực hiện tương tự để tạo 1 EC2 Instance Windows chạy trong Private subnet.
+![EC2](/images/2.prerequisite/13-gitbash-nghinx.png)

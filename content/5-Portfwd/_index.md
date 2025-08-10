@@ -1,91 +1,62 @@
 ---
-title : "Port Forwarding"
-date :  "`r Sys.Date()`" 
-weight : 5 
+title : "Operating Procedure"
+date : "`r Sys.Date()`"
+weight : 5
 chapter : false
 pre : " <b> 5. </b> "
 ---
 
-{{% notice info %}}
-**Port Forwarding** is a useful way to redirect network traffic from one IP address - Port to another IP address - Port. With **Port Forwarding** we can access an EC2 instance located in the private subnet from our workstation.
+{{% notice note %}}
+Objective: Manage, monitor and expand PrivateLink easily, ensure stable and secure service operation, suitable for single operators.
+
 {{% /notice %}}
 
-We will configure **Port Forwarding** for the RDP connection between our machine and **Private Windows Instance** located in the private subnet we created for this exercise.
+**1. Record and store important configurations**
++ Record information about VPC ID, CIDR, Subnet ID, Security Group ID, Endpoint ID, Service Name.
 
-![port-fwd](/images/arc-04.png) 
++ Save in an easy-to-find place (Google Docs, Notepad, or a file on your computer).
 
-#### Create IAM user with permission to connect SSM
++ Clearly record the date and time of configuration changes for tracking.
 
-1. Go to [IAM service management console](https://console.aws.amazon.com/iamv2/home)
-   + Click **Users** , then click **Add users**.
+**2. Check periodically (eg once a week)**
++ Check DNS resolution using the nslookup or dig command from EC2 or your personal computer.
 
-![FWD](/images/5.fwd/001-fwd.png)
++ Quickly view Endpoint status in AWS Console: is it “Available”, is there any error.
 
-2. At the **Add user** page.
-   + In the **User name** field, enter **Portfwd**.
-   + Click on **Access key - Programmatic access**.
-   + Click **Next: Permissions**.
-  
-![FWD](/images/5.fwd/002-fwd.png)
++ Check VPC Flow Logs (if enabled) or CloudWatch logs for unusual access.
 
-3. Click **Attach existing policies directly**.
-   + In the search box, enter **ssm**.
-   + Click on **AmazonSSMFullAccess**.
-   + Click **Next: Tags**, click **Next: Reviews**.
-   + Click **Create user**.
++ Take notes if any abnormalities are detected.
 
-4. Save **Access key ID** and **Secret access key** information to perform AWS CLI configuration.
+**3. When to expand or change**
 
-#### Install and Configure AWS CLI and Session Manager Plugin
-  
-To perform this hands-on, make sure your workstation has [AWS CLI]() and [Session Manager Plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session) installed -manager-working-with-install-plugin.html)
++ If the service is highly loaded, add a new subnet to the Endpoint and NLB via Console.
 
-More hands-on tutorials on installing and configuring the AWS CLI can be found [here](https://000011.awsstudygroup.com/).
++ If you want to expand to a new region, create an additional Endpoint in that region.
 
-{{%notice tip%}}
-With Windows, when extracting the **Session Manager Plugin** installation folder, run the **install.bat** file with Administrator permission to perform the installation.
-{{%/notice%}}
++ Always record changes and recheck the connection after adding a new subnet or region.
 
-#### Implement Portforwarding
+**4. Basic troubleshooting**
++ DNS is not working → recheck Private DNS setting, Security Group.
 
-1. Run the command below in **Command Prompt** on your machine to configure **Port Forwarding**.
++ Connection timeout → check Endpoint status, NLB, Security Group, Route Table.
 
-```
-   aws ssm start-session --target (your ID windows instance) --document-name AWS-StartPortForwardingSession --parameters portNumber="3389",localPortNumber="9999" --region (your region)
-```
-{{%notice tip%}}
++ Record errors and solutions for quick handling next time.
 
-**Windows Private Instance** **Instance ID** information can be found when you view the EC2 Windows Private Instance server details.
+**5. Simple Security**
++ Do not share AWS access with others if not necessary.
 
-{{%/notice%}}
++ Make sure Security Group only opens necessary ports.
 
-   + Example command:
++ Enable CloudTrail to track who changes the configuration (if any).
 
-```
-C:\Windows\system32>aws ssm start-session --target i-06343d7377486760c --document-name AWS-StartPortForwardingSession --parameters portNumber="3389",localPortNumber="9999" --region ap-southeast-1
-```
+**6. Simple Backup**
++ Save the configuration file or configuration snapshot on AWS (eg: Export CloudFormation if available).
 
-{{%notice warning%}}
++ If necessary, quickly write down the steps to create Endpoint, NLB so you can do it again quickly.
 
-If your command gives an error like below: \
-SessionManagerPlugin is not found. Please refer to SessionManager Documentation here: http://docs.aws.amazon.com/console/systems-manager/session-manager-plugin-not-found\
-Prove that you have not successfully installed the Session Manager Plugin. You may need to relaunch **Command Prompt** after installing **Session Manager Plugin**.
+**7. Self-study and improve**
++ Refer to AWS documentation when there is a new feature.
 
-{{%/notice%}}
++ Automate with scripts or CloudFormation when you have time to reduce manual operations.
 
-2. Connect to the **Private Windows Instance** you created using the **Remote Desktop** tool on your workstation.
-   + In the Computer section: enter **localhost:9999**.
-
-
-![FWD](/images/5.fwd/003-fwd.png)
-
-
-3. Return to the administration interface of the System Manager - Session Manager service.
-   + Click tab **Session history**.
-   + We will see session logs with Document name **AWS-StartPortForwardingSession**.
-
-
-![FWD](/images/5.fwd/004-fwd.png)
-
-
-Congratulations on completing the lab on how to use Session Manager to connect and store session logs in S3 bucket. Remember to perform resource cleanup to avoid unintended costs.
+Remember to perform the resource cleanup step to avoid unexpected costs.

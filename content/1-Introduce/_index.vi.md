@@ -5,18 +5,19 @@ weight : 1
 chapter : false
 pre : " <b> 1. </b> "
 ---
-**Session Manager** là một chức năng nằm trong dịch vụ System Manager của AWS, Session Manager cung cấp khả năng quản lý các máy chủ một cách an toàn mà **không cần mở port SSH, không cần Bastion Host hoặc quản lý SSH key**. 
-Session Manager cũng giúp dễ dàng tuân thủ các chính sách của công ty yêu cầu quyền truy cập có kiểm soát, đảm bảo việc bảo mật nghiêm ngặt và ghi log truy việc truy cập trong khi vẫn cung cấp cho người dùng cuối quyền truy cập đa nền tảng.
+**PrivateLink** là một tính năng mạnh mẽ trong dịch vụ mạng của AWS, cho phép bạn kết nối riêng tư đến các dịch vụ chạy trên AWS theo mô hình **Service Consumer** và **Service Provider**, mà không cần sử dụng Internet, không cần NAT Gateway, không cần VPN hoặc kết nối Direct Connect.
 
-Với việc sử dụng Session Manager, bạn sẽ có được những ưu điểm sau:
+**PrivateLink đảm bảo rằng lưu lượng giữa các VPC hoặc giữa các tài khoản và vùng (Region) khác nhau chỉ đi qua mạng nội bộ của AWS, giúp tăng cường bảo mật và giảm thiểu độ trễ.**
 
-- Không cần phải mở cổng 22 cho giao thức SSH.
-- Có thể cấu hình để kết nối không cần đi ra ngoài internet.
-- Không cần quản lý private key của server để kết nối SSH.
-- Quản lý tập trung được user bằng việc sử dụng AWS IAM.
-- Truy cập tới server một cách dễ dàng và đơn giản bằng một cú click chuột.
-- Thời gian truy cập nhanh chóng hơn các phương thức truyền thống như SSH.
-- Hỗ trợ nhiều hệ điều hành khác nhau như Linux, Windows, MacOS.
-- Log lại được các phiên kết nối và các câu lệnh đã thực thi trong lúc kết nối tới server.
+**PrivateLink đặc biệt hữu ích trong các môi trường doanh nghiệp yêu cầu truy cập dịch vụ an toàn**, kiểm soát chặt chẽ và khả năng mở rộng dễ dàng.
+Với việc sử dụng PrivateLink, bạn sẽ có được những ưu điểm sau:
+- Không cần mở cổng mạng công cộng, loại bỏ nguy cơ bị tấn công từ Internet.
+- Không cần triển khai Bastion Host, NAT Gateway hoặc VPN, tiết kiệm chi phí hạ tầng.
+- Lưu lượng truy cập giữa client và service được truyền qua mạng AWS nội bộ (AWS Backbone), giúp đảm bảo hiệu năng cao và bảo mật tuyệt đối.
+- Hỗ trợ kết nối cross-account và cross-region thông qua việc chia sẻ dịch vụ bằng Service Name.
+- Tích hợp dễ dàng với AWS IAM và Resource Access Manager (RAM) để kiểm soát quyền truy cập theo người dùng hoặc tổ chức.
+- Dễ dàng cấu hình và mở rộng, không yêu cầu thay đổi nhiều hạ tầng.
+- Tự động tích hợp với AWS Private DNS, giúp người dùng truy cập dịch vụ bằng tên miền quen thuộc như truy cập nội bộ.
+- Ghi log và theo dõi truy cập thông qua CloudTrail, VPC Flow Logs và CloudWatch giúp tăng cường khả năng giám sát và audit.
+- Với những ưu điểm trên, bạn có thể sử dụng AWS PrivateLink như một giải pháp thay thế tối ưu cho các kết nối truyền thống thông qua Internet hoặc VPN, mang lại bảo mật, hiệu năng và khả năng mở rộng cao hơn trong các hệ thống đa tài khoản, đa vùng (multi-account, multi-region).
 
-Với những ưu điểm trên, bạn có thể sử dụng Session Manager thay vì sử dụng kỹ thuật Bastion host giúp chúng ta tiết kiệm được thời gian và chi phí khi quản lý server Bastion.

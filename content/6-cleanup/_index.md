@@ -1,83 +1,89 @@
-+++
-title = "Clean up resources"
-date = 2022
-weight = 6
-chapter = false
-pre = "<b>6. </b>"
-+++
+---
+title : "Clean up resources"
+date : "`r Sys.Date()`"
+weight : 6
+chapter : false
+pre : " <b> 6. </b> "
+---
+Objective:
+Delete all created resources to avoid unnecessary costs and prepare a clean environment for the next deployments or labs.
 
-We will take the following steps to delete the resources we created in this exercise.
+**Step 1: Delete Endpoint Interface in VPC Consumer**
++ Go to VPC → Endpoints in region us-west-2 (Consumer).
 
-#### Delete EC2 instance
++ Select the Endpoint corresponding to the created PrivateLink (based on Service Name).
 
-1. Go to [EC2 service management console](https://console.aws.amazon.com/ec2/v2/home)
-   + Click **Instances**.
-   + Select both **Public Linux Instance** and **Private Windows Instance** instances.
-   + Click **Instance state**.
-   + Click **Terminate instance**, then click **Terminate** to confirm.
++ Click Actions → Delete Endpoint to delete the Endpoint Interface.
 
-2. Go to [IAM service management console](https://console.aws.amazon.com/iamv2/home#/home)
-   + Click **Roles**.
-   + In the search box, enter **SSM**.
-   + Click to select **SSM-Role**.
-   + Click **Delete**, then enter the role name **SSM-Role** and click **Delete** to delete the role.
+**Step 2: Delete Security Group of Endpoint (Consumer)**
++ Go to EC2 → Security Groups in region us-west-2.
 
-![Clean](/images/6.clean/001-clean.png)
++ Find and select SG-Endpoint (or SG related to Endpoint).
 
-3. Click **Users**.
-   + Click on user **Portfwd**.
-   + Click **Delete**, then enter the user name **Portfwd** and click **Delete** to delete the user.
++ Delete this Security Group (Delete).
 
-#### Delete S3 bucket
+**Step 3: Delete EC2 Consumer (if any)**
++ Go to EC2 → Instances region us-west-2.
 
-1. Access [System Manager - Session Manager service management console](https://console.aws.amazon.com/systems-manager/session-manager).
-   + Click the **Preferences** tab.
-   + Click **Edit**.
-   + Scroll down.
-   + In the section **S3 logging**.
-   + Uncheck **Enable** to disable logging.
-   + Scroll down.
-   + Click **Save**.
++ Shut down and terminate the EC2 instances created in VPC Consumer, for example the instance used to test the connection.
 
-2. Go to [S3 service management console](https://s3.console.aws.amazon.com/s3/home)
-   + Click on the S3 bucket we created for this lab. (Example: lab-fcj-bucket-0001 )
-   + Click **Empty**.
-   + Enter **permanently delete**, then click **Empty** to proceed to delete the object in the bucket.
-   + Click **Exit**.
+**Step 4: Delete Subnet and VPC Consumer**
++ Go to VPC → Subnets in region us-west-2.
 
-3. After deleting all objects in the bucket, click **Delete**
++ Select the subnets belonging to VPC-Consumer (Consumer-Subnet-1, Consumer-Subnet-2).
 
-![Clean](/images/6.clean/002-clean.png)
++ Delete each subnet.
 
-4. Enter the name of the S3 bucket, then click **Delete bucket** to proceed with deleting the S3 bucket.
++ Go back to VPC → Your VPCs, select VPC-Consumer and delete the VPC.
 
-![Clean](/images/6.clean/003-clean.png)
+**Step 5: From the Provider region (us-east-1), delete Endpoint Service and NLB**
++ Go to VPC → Endpoint Services region us-east-1.
 
-#### Delete VPC Endpoints
++ Select the Service-Provider Endpoint Service created.
 
-1. Go to [VPC service management console](https://console.aws.amazon.com/vpc/home)
-   + Click **Endpoints**.
-   + Select the 4 endpoints we created for the lab including **SSM**, **SSMMESSAGES**, **EC2MESSAGES**, **S3GW**.
-   + Click **Actions**.
-   + Click **Delete VPC endpoints**.
++ Delete Endpoint Service (Delete).
 
-![Clean](/images/6.clean/004-clean.png)
++ Go to EC2 → Load Balancers region us-east-1.
 
-2. In the confirm box, enter **delete**.
-   + Click **Delete** to proceed with deleting endpoints.
++ Select NLB-Provider (Network Load Balancer).
 
-3. Click the refresh icon, check that all endpoints have been deleted before proceeding to the next step.
++ Delete Load Balancer (Delete).
 
-![Clean](/images/6.clean/005-clean.png)
+**Step 6: Delete Target Group Backend**
++ Go to EC2 → Target Groups region us-east-1.
 
-#### Delete VPC
++ Select Target Group tgbackend.
 
-1. Go to [VPC service management console](https://console.aws.amazon.com/vpc/home)
-   + Click **Your VPCs**.
-   + Click on **Lab VPC**.
-   + Click **Actions**.
-   + Click **Delete VPC**.
++ Delete Target Group.
 
-2. In the confirm box, enter **delete** to confirm, click **Delete** to delete **Lab VPC** and related resources.
+**Step 7: Delete EC2 Backend (Provider)**
++ Go to EC2 → Instances region us-east-1.
 
-![Clean](/images/6.clean/006-clean.png)
++ Turn off and terminate the Backend-EC2 instance.
+
+**Step 8: Delete Provider Security Groups**
++ Go to EC2 → Security Groups region us-east-1.
+
++ Delete the Security Groups: SG-Backend, SG-NLB.
+
+**Step 9: Delete Subnets and VPC Provider**
++ Go to VPC → Subnets region us-east-1.
+
++ Delete subnets belonging to VPC-Provider (Provider-Subnet-1, Provider-Subnet-2).
+
++ Go to VPC → Your VPCs region us-east-1.
+
++ Delete VPC-Provider.
+
+**Step 10: Delete Private Hosted Zone**
++ Go to Route 53 → Hosted zones (default region).
+
++ Find and delete Private Hosted Zone named service.provider.local if created for DNS resolution.
+
+{{%notice note%}}
+Note:
+Delete resources in order from smallest to largest (instances first, then security groups, subnets, then VPC) to avoid dependency errors.
+
+Check the remaining resources by going to each AWS Console service.
+Ensure that no resources incur costs after deletion.
+{{%/notice%}}

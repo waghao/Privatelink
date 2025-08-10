@@ -1,34 +1,32 @@
 ---
-title : "Update IAM Role"
+title : "Optimize network configuration by removing Internet Gateway for Private Subnet "
 date : "`r Sys.Date()`"
 weight : 1
 chapter : false
 pre : " <b> 4.1 </b> "
 ---
 
-For our EC2 instances to be able to send session logs to the S3 bucket, we will need to update the IAM Role assigned to the EC2 instance by adding a policy that allows access to S3.
+During the process of deploying the internal Network Load Balancer (Internal NLB), I realized that using a public subnet (with a route to the Internet Gateway) is not suitable and can cause IP exposure, loss of security, and AWS also does not allow choosing a public subnet for Internal NLB.
 
-#### Update IAM Role
+Therefore, I have performed the following important optimization steps:
 
-1. Go to [IAM service management console](https://console.aws.amazon.com/iamv2/home?#/home)
-  + Click **Roles**.
-  + In the search box, enter **SSM**.
-  + Click on the **SSM-Role** role.
+1. Remove the Internet Gateway (IGW) or edit the Route Table
 
-![S3](/images/4.s3/002-s3.png)
++ I have deleted the routes pointing to IGW (0.0.0.0/0 → igw-xxxxxxx) in the Route Table of the subnets selected to be private subnets.
 
-2. Click **Attach policies**.
- 
-![S3](/images/4.s3/003-s3.png)
++ This ensures that the subnet no longer has direct access to the internet, in accordance with the security requirements of Internal NLB.
 
-3. In the Search box enter **S3**.
-  + Click the policy **AmazonS3FullAccess**.
-  + Click **Attach policy**.
- 
-![S3](/images/4.s3/004-s3.png)
- 
-{{%notice tip%}}
-In the production environment, we will grant stricter permissions to the specified S3 bucket. In the framework of this lab, we use the policy **AmazonS3FullAccess** for convenience.
-{{%/notice%}}
++ Check and ensure that the subnet becomes a real Private Subnet. After editing the route table, I recheck the subnets to ensure that there is no longer a path to the Internet Gateway. Only these subnets are allowed to be selected as subnets for Internal NLB.
 
-Next, we will proceed to create an S3 bucket to store session logs.
+2. Choose a private subnet belonging to at least 2 Availability Zones (AZs)
+
++ I choose a private subnet in 2 AZs to ensure high availability, the load balancer can withstand errors and balance the load effectively.
+
++ Optimal results
++ The system is better secured, avoiding exposing the IP to the outside.
+
++ Meets AWS's technical requirements for Internal NLB.
+
++ Optimizes costs and increases system stability when operating on multiple AZs with private subnets.
+
+Next, we will proceed to see the costs.

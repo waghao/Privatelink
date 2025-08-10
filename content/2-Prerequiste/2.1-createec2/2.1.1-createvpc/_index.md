@@ -7,16 +7,21 @@ pre : " <b> 2.1.1 </b> "
 ---
 
 
-#### Create VPC **Lab VPC**
-1. Go to [VPC service management console](https://console.aws.amazon.com/vpc/home)
-   + Click **Your VPC**.
-   + Click **Create VPC**.
+1. Access [VPC service management interface](https://console.aws.amazon.com/vpc/home)
+  + Click **Your VPC**.
+  + Click **Create VPC**.
 
-![VPC](/images/2.prerequisite/001-createvpc.png)
+![VPC](/images/2.prerequisite/1-createvcpa-1.png)
 
-2. At the **Create VPC** page.
-   + In the **Name tag** field, enter **Lab VPC**.
-   + In the **IPv4 CIDR** field, enter: **10.10.0.0/16**.
-   + Click **Create VPC**.
+2. At the **Create VPC**.
+  + In the **Resources to create** choose **VCP Only**
+  + In the **Name tag** fill **VPC-Provider**.
+  + In the **IPv4 CIDR** fill : **10.10.0.0/16**.
+  + Click **Create VPC**.
 
-![VPC](/images/2.prerequisite/002-createvpc.png)
+![VPC](/images/2.prerequisite/2-createvcpa-2.png)
+
+
+3. At the **DNS settings** Click  
++ Enable DNS resolution
++ Enable DNS hostnames
