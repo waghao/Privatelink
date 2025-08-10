@@ -1,14 +1,11 @@
-# Change the default theme to be use when building the site with Hugo
+baseURL = "https://quanghao.github.io/"
 theme = "hugo-theme-learn"
 
-# For search functionality
 [outputs]
 home = [ "HTML", "RSS", "JSON"]
 
 [params]
-  # Change default color scheme with a variant one. Can be "red", "blue", "green".
   themeVariant = "workshop"
-  # Git hub repo link
   editURL = ""
   description = ""  
   author = "holehuy.it@gmail.com"
